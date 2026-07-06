@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Dashboard dos experimentos de escalonamento">
+  <meta name="author" content="Neivan Júnior Alves Costa">
+  <title>Trabalho 02 | Dashboard de Scheduling</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="sidebar" aria-label="Navegação principal">
+    <div class="brand">
+      <span class="brand-mark">SL</span>
+      <span>SCHEDULING LAB</span>
+    </div>
+    <nav class="nav-list">
+      <button class="nav-item active" data-action="overview"><b>⌂</b><span>Visão geral</span></button>
+      <button class="nav-item" data-action="machine"><b>M</b><span>Machine<br>Scheduling</span></button>
+      <button class="nav-item" data-action="jobshop"><b>J</b><span>Job Shop<br>Scheduling</span></button>
+      <button class="nav-item" data-action="flowshop"><b>F</b><span>Flow Shop<br>Scheduling</span></button>
+      <button class="nav-item" data-action="gantt"><b>▥</b><span>Gantt</span></button>
+      <button class="nav-item" data-action="analysis"><b>↗</b><span>Análises</span></button>
+      <button class="nav-item" data-action="conclusions"><b>✓</b><span>Conclusões</span></button>
+    </nav>
+    <div class="sidebar-meta" id="sidebarMeta">Julia + JuMP</div>
+  </aside>
+
+  <main class="app-shell">
+    <header class="topbar">
+      <button class="menu-button" id="menuButton" aria-label="Abrir menu" aria-expanded="false">☰</button>
+      <div class="title-block">
+        <p class="eyebrow">OTIMIZAÇÃO COMBINATÓRIA</p>
+        <h1>Trabalho 02 — Problemas de Escalonamento</h1>
+        <p>Dashboard comparativo · Machine, Job Shop e Flow Shop Scheduling</p>
+      </div>
+      <div class="run-date"><span>ÚLTIMA EXECUÇÃO</span><strong id="runDate">—</strong></div>
+    </header>
+
+    <section class="content">
+      <div class="toolbar" aria-label="Filtros do dashboard">
+        <label><span>Problema</span>
+          <select id="problemFilter">
+            <option value="all">Todos os problemas</option>
+            <option value="machine">Machine Scheduling</option>
+            <option value="jobshop">Job Shop Scheduling</option>
+            <option value="flowshop">Flow Shop Scheduling</option>
+          </select>
+        </label>
+        <label><span>Status</span>
+          <select id="statusFilter">
+            <option value="all">Todos os status</option>
+            <option value="OPTIMAL">Ótimo comprovado</option>
+            <option value="TIME_LIMIT">Limite de tempo</option>
+          </select>
+        </label>
+        <button class="export-button" id="exportButton" title="Exportar dados filtrados">↓ Exportar CSV</button>
+        <p class="filter-summary" id="filterSummary" aria-live="polite"></p>
+      </div>
+
+      <section class="kpi-grid" aria-label="Indicadores principais">
+        <article class="kpi-card blue"><small>Instâncias analisadas</small><strong id="kpiInstances">13</strong><span id="kpiProblems">3 problemas</span></article>
+        <article class="kpi-card green"><small>Soluções ótimas</small><strong id="kpiOptimal">6</strong><span id="kpiOptimalRate">46,2% dos casos</span></article>
+        <article class="kpi-card orange"><small>Gap médio</small><strong id="kpiGap">22,6%</strong><span>em relação ao bound</span></article>
+        <article class="kpi-card purple"><small>Variáveis binárias</small><strong id="kpiBinaries">2.190</strong><span>total modelado</span></article>
+        <article class="kpi-card teal"><small>Tempo total MILO</small><strong id="kpiTime">—</strong><span id="timeLimitHint">limite por modelo</span></article>
+      </section>
+
+      <section class="section-block" id="instancesSection">
+        <div class="section-heading">
+          <div><p class="eyebrow">RESULTADOS DETALHADOS</p><h2>Instâncias e desempenho dos modelos</h2></div>
+          <span id="executionMeta">Configuração de execução</span>
+        </div>
+        <div class="table-grid" id="tablesContainer"></div>
+      </section>
+
+      <section class="section-block" id="analysisSection">
+        <div class="section-heading">
+          <div><p class="eyebrow">COMPARATIVO</p><h2>Leitura agregada dos experimentos</h2></div>
+          <span>Passe o cursor sobre as barras</span>
+        </div>
+        <div class="charts-grid">
+          <article class="panel chart-panel">
+            <div class="panel-header"><h3>Tempo médio de solução</h3><span>segundos</span></div>
+            <div class="bar-chart" id="timeChart" role="img" aria-label="Tempo médio por problema"></div>
+          </article>
+          <article class="panel chart-panel">
+            <div class="panel-header"><h3>Gap médio por problema</h3><span>apenas MILO</span></div>
+            <div class="bar-chart" id="gapChart" role="img" aria-label="Gap médio por problema"></div>
+          </article>
+          <article class="panel status-panel">
+            <div class="panel-header"><h3>Status das instâncias</h3><span id="statusPanelTotal">13 execuções</span></div>
+            <div class="status-content">
+              <div class="donut" id="statusDonut"><div><strong id="donutTotal">13</strong><span>instâncias</span></div></div>
+              <div class="legend" id="statusLegend"></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="lower-grid">
+        <article class="panel gantt-panel" id="ganttSection">
+          <div class="panel-header">
+            <div><p class="eyebrow">SEQUENCIAMENTO ÓTIMO</p><h3>Gantt da instância FT06</h3></div>
+            <span id="ganttMakespan">Makespan</span>
+          </div>
+          <div class="machine-legend" id="machineLegend"></div>
+          <div class="gantt-scroll"><div class="gantt-chart" id="ganttChart"></div></div>
+        </article>
+        <article class="panel insights-panel" id="conclusionsSection">
+          <div class="panel-header"><div><p class="eyebrow">SÍNTESE</p><h3>Principais insights</h3></div></div>
+          <ul class="insight-list" id="insightList"></ul>
+        </article>
+      </section>
+
+      <footer>
+        <span>Neivan Júnior Alves Costa · Aluno especial</span>
+        <span>Fonte: <code>output/results</code></span>
+        <span id="footerMeta">Execução paralela</span>
+      </footer>
+    </section>
+  </main>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
